@@ -38,12 +38,5 @@ x_new = pd.DataFrame({
 x_new['island'] = island_encoder.transform(x_new['island'])
 x_new['sex'] = sex_encoder.transform(x_new['sex'])
 
-# Make prediction
-try:
-    y_pred_new = model.predict(model.predict())
-    result = species_encoder.inverse_transform(y_pred_new)
-    st.success(f"Predicted Species: {result[0]}")
-except Exception as e:
-    st.error(f"An error occurred: {e}")
 
 
