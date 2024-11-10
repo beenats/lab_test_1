@@ -1,30 +1,30 @@
 import streamlit as st
 import pickle
 import pandas as pd
-from sklearn.model_selection import train_test_split
-from sklearn.pipeline import Pipeline
-from sklearn.preprocessing import StandardScaler, OneHotEncoder
-from sklearn.compose import ColumnTransformer
-from sklearn.ensemble import RandomForestClassifier
-from sklearn.model_selection import GridSearchCV
 
-# Load the model
+# Load the model and column transformer
 with open('model_penguin_66130701902.pkl', 'rb') as file:
     obj = pickle.load(file)
-    model = obj[0]
+    model = obj[0]  # Assuming the first object is the model
+    column_transformer = obj[1]  # Assuming the second object is the transformer
 
-# Streamlit app
+# Check if the column transformer is fitted (if not, we need to fit it)
+if not hasattr(column_transformer, 'transformers_'):
+    # Ensure to fit it with your training data (you need to have X_train data)
+    column_transformer.fit(X_train)  # Assuming you have access to the training data
+
+# Now proceed to prediction
 st.title("Penguin Species Prediction")
 
-# Input features
+# Input form for Streamlit
 island = st.selectbox("Island", ['Torgersen', 'Biscoe', 'Dream'])
-culmen_length_mm = st.number_input("Culmen Length (mm)", value=37.0)
-culmen_depth_mm = st.number_input("Culmen Depth (mm)", value=19.3)
-flipper_length_mm = st.number_input("Flipper Length (mm)", value=192.3)
-body_mass_g = st.number_input("Body Mass (g)", value=3750)
+culmen_length_mm = st.number_input("Culmen Length (mm)", min_value=0.0, step=0.1)
+culmen_depth_mm = st.number_input("Culmen Depth (mm)", min_value=0.0, step=0.1)
+flipper_length_mm = st.number_input("Flipper Length (mm)", min_value=0.0, step=0.1)
+body_mass_g = st.number_input("Body Mass (g)", min_value=0.0, step=1.0)
 sex = st.selectbox("Sex", ['MALE', 'FEMALE'])
 
-# Create input DataFrame
+# Prepare the input data as a DataFrame
 x_new = pd.DataFrame({
     'island': [island],
     'culmen_length_mm': [culmen_length_mm],
@@ -34,9 +34,11 @@ x_new = pd.DataFrame({
     'sex': [sex]
 })
 
-# Make prediction
-if st.button("Predict"):
-    y_pred_new = model.predict(x_new)
-    result = y_pred_new[0]  # Get the predicted species
+# Transform the input data
+x_new_transformed = column_transformer.transform(x_new)
 
-    st.success(f"Predicted Specie: {result}")
+# Predict the species
+if st.button("Predict Species"):
+    y_pred_new = model.predict(x_new_transformed)
+    predicted_species = y_pred_new[0]  # In case it's a single prediction
+    st.success(f"The predicted species is: {predicted_species}")
