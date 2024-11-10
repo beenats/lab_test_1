@@ -9,7 +9,7 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import GridSearchCV
 # Load the model and encoders
 with open('model_penguin_66130701902.pkl', 'rb') as file:
-    model, species_encoder, island_encoder, sex_encoder, column_transformer = pickle.load(file)
+    model, species_encoder, island_encoder, sex_encoder = pickle.load(file)
 
 # Streamlit app
 st.title("Penguin Species Prediction")
@@ -38,24 +38,15 @@ x_new = pd.DataFrame({
     'sex': [sex]
 })
 
-# Check if ColumnTransformer is fitted before transforming
-try:
-    # Transform new data with the fitted ColumnTransformer
-    x_new_transformed = column_transformer.transform(x_new)
-except AttributeError:
-    st.error("The ColumnTransformer has not been properly fitted. Please ensure the model was trained correctly.")
-    st.stop()
+# Transform categorical columns using the encoders
+x_new['island'] = island_encoder.transform(x_new['island'])
+x_new['sex'] = sex_encoder.transform(x_new['sex'])
 
 # Prediction button
 if st.button("Predict Species"):
-    try:
-        # Make prediction
-        y_pred_new = model.predict(x_new_transformed)
-        predicted_species = species_encoder.inverse_transform(y_pred_new)
-        
-        # Display the result
-        st.success(f"The predicted species is: {predicted_species[0]}")
-    except Exception as e:
-        st.error(f"An error occurred: {str(e)}")
-
-
+    # Make prediction
+    y_pred_new = model.predict(x_new)
+    predicted_species = species_encoder.inverse_transform(y_pred_new)
+    
+    # Display the result
+    st.success(f"The predicted species is: {predicted_species[0]}")
