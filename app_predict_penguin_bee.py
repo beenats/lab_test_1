@@ -8,10 +8,15 @@ from sklearn.compose import ColumnTransformer
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import GridSearchCV
 
-# Load the model
+# Load the model and data
 with open('model_penguin_66130701902.pkl', 'rb') as file:
     obj = pickle.load(file)
     model = obj[0]
+    X_train = obj[1]  # Assuming X_train is also saved in the pickle file
+    y_train = obj[2]  # Assuming y_train is also saved in the pickle file
+
+# Fit the model (this should be done once when the app starts)
+model.fit(X_train, y_train) 
 
 # Streamlit app
 st.title("Penguin Species Prediction")
