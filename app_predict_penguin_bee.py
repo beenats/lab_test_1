@@ -8,44 +8,35 @@ from sklearn.compose import ColumnTransformer
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import GridSearchCV
 
-# Load the model and data
+# Load the model
 with open('model_penguin_66130701902.pkl', 'rb') as file:
     obj = pickle.load(file)
     model = obj[0]
-    X_train = obj[1]  # Assuming X_train is also saved in the pickle file
-    y_train = obj[2]  # Assuming y_train is also saved in the pickle file
 
-# Fit the model (this should be done once when the app starts)
-model.fit(X_train, y_train) 
+# Streamlit app
+st.title("Penguin Species Prediction")
 
-def prepare_data_for_prediction(data, model):
-    """Prepares input data for the model using the same steps as during training."""
+# Input features
+island = st.selectbox("Island", ['Torgersen', 'Biscoe', 'Dream'])
+culmen_length_mm = st.number_input("Culmen Length (mm)", value=37.0)
+culmen_depth_mm = st.number_input("Culmen Depth (mm)", value=19.3)
+flipper_length_mm = st.number_input("Flipper Length (mm)", value=192.3)
+body_mass_g = st.number_input("Body Mass (g)", value=3750)
+sex = st.selectbox("Sex", ['MALE', 'FEMALE'])
 
-    # Get the preprocessor from the pipeline
-    preprocessor = model.named_steps['preprocessor']
-
-    # Fit the preprocessor if it's not already fitted
-    if not hasattr(preprocessor, 'transformers_'):  # Check if it's fitted
-        preprocessor.fit(X_train) # Use representative data to fit
-
-    # Transform the input data
-    transformed_data = preprocessor.transform(data)
-
-    # Get feature names after transformation
-    categorical_features = preprocessor.transformers_[1][2]
-    numerical_features = preprocessor.transformers_[0][2]
-    feature_names = numerical_features + list(preprocessor.named_transformers_['cat'].get_feature_names_out(categorical_features))
-
-    # Create a DataFrame with the transformed data and correct column names
-    transformed_df = pd.DataFrame(transformed_data, columns=feature_names)
-
-    return transformed_df
-
-# ... (rest of your Streamlit app code)
+# Create input DataFrame
+x_new = pd.DataFrame({
+    'island': [island],
+    'culmen_length_mm': [culmen_length_mm],
+    'culmen_depth_mm': [culmen_depth_mm],
+    'flipper_length_mm': [flipper_length_mm],
+    'body_mass_g': [body_mass_g],
+    'sex': [sex]
+})
 
 # Make prediction
 if st.button("Predict"):
-    prepared_x_new = prepare_data_for_prediction(x_new, model)  # Pass model
-    y_pred_new = model.predict(prepared_x_new)
-    result = y_pred_new[0]
+    y_pred_new = model.predict(x_new)
+    result = y_pred_new[0]  # Get the predicted species
+
     st.success(f"Predicted Specie: {result}")
