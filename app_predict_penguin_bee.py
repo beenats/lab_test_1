@@ -25,7 +25,7 @@ flipper_length_mm = st.number_input("Flipper Length (mm)", min_value=0.0, step=0
 body_mass_g = st.number_input("Body Mass (g)", min_value=0.0, step=1.0)
 sex = st.selectbox("Sex", ['MALE', 'FEMALE'])
 
-# Prepare the input data as a DataFrame
+# Prepare the input data as a DataFrame (Ensure it's 2D, with one row and multiple columns)
 x_new = pd.DataFrame({
     'island': [island],
     'culmen_length_mm': [culmen_length_mm],
@@ -35,9 +35,13 @@ x_new = pd.DataFrame({
     'sex': [sex]
 })
 
+# Check the shape of the input data to make sure it's 2D
+st.write(f"Input data shape: {x_new.shape}")
+
 # Transform the input data using the fitted column transformer
 try:
     x_new_transformed = column_transformer.transform(x_new)
+    st.write(f"Transformed input data shape: {x_new_transformed.shape}")
 except Exception as e:
     st.error(f"Error during transformation: {str(e)}")
     st.stop()
