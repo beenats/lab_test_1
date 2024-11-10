@@ -40,7 +40,7 @@ st.write(f"Input data shape: {x_new.shape}")
 
 # Transform the input data using the fitted column transformer
 try:
-    # Ensure we're using the correct method on the correct features
+    # Transform the data using the column transformer fitted during training
     x_new_transformed = column_transformer.transform(x_new)
     
     # Check the transformed data
