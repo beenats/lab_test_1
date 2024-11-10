@@ -13,10 +13,12 @@ with open('model_penguin_66130701902.pkl', 'rb') as file:
     model, species_encoder, island_encoder, sex_encoder = pickle.load(file)
 
 # Streamlit app
-st.title("Penguin Species Predictor")
+st.title("Penguin Species Prediction")
 
+# Introduction
 st.write("""
-Provide the penguin features below to predict its species:
+This app allows you to predict the species of a penguin based on its physical characteristics.
+Please enter the details below:
 """)
 
 # User input for penguin features
@@ -37,16 +39,17 @@ x_new = pd.DataFrame({
     'sex': [sex]
 })
 
-# Predict and display the result
+# Transform categorical columns using the encoders
+x_new['island'] = island_encoder.transform(x_new['island'])
+x_new['sex'] = sex_encoder.transform(x_new['sex'])
+
+# Prediction button
 if st.button("Predict Species"):
-    # Transform categorical columns using the encoders
-    x_new['island'] = island_encoder.transform(x_new['island'])
-    x_new['sex'] = sex_encoder.transform(x_new['sex'])
-    
     # Make prediction
     y_pred_new = model.predict(x_new)
     predicted_species = species_encoder.inverse_transform(y_pred_new)
     
-    st.success(f"Predicted Species: {predicted_species[0]}")
+    # Display the result
+    st.success(f"The predicted species is: {predicted_species[0]}")
 
 
