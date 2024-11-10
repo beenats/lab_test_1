@@ -38,15 +38,23 @@ x_new = pd.DataFrame({
     'sex': [sex]
 })
 
-# Transform categorical columns using the encoders
-x_new['island'] = island_encoder.transform(x_new['island'])
-x_new['sex'] = sex_encoder.transform(x_new['sex'])
+# Check if encoders are fitted
+try:
+    # Transform categorical columns using the encoders
+    x_new['island'] = island_encoder.transform(x_new['island'])
+    x_new['sex'] = sex_encoder.transform(x_new['sex'])
+except AttributeError:
+    st.error("One or more encoders are not properly fitted. Please ensure the model and encoders were trained properly.")
+    st.stop()
 
 # Prediction button
 if st.button("Predict Species"):
-    # Make prediction
-    y_pred_new = model.predict(x_new)
-    predicted_species = species_encoder.inverse_transform(y_pred_new)
-    
-    # Display the result
-    st.success(f"The predicted species is: {predicted_species[0]}")
+    try:
+        # Make prediction
+        y_pred_new = model.predict(x_new)
+        predicted_species = species_encoder.inverse_transform(y_pred_new)
+        
+        # Display the result
+        st.success(f"The predicted species is: {predicted_species[0]}")
+    except Exception as e:
+        st.error(f"An error occurred: {str(e)}")
