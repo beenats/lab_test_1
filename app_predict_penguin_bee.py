@@ -1,12 +1,7 @@
 import pickle
 import pandas as pd
 import streamlit as st
-from sklearn.model_selection import train_test_split
-from sklearn.pipeline import Pipeline
-from sklearn.preprocessing import StandardScaler, OneHotEncoder  # Import OneHotEncoder
-from sklearn.compose import ColumnTransformer  # Import ColumnTransformer
-from sklearn.ensemble import RandomForestClassifier
-from sklearn.model_selection import GridSearchCV
+
 # Load the model and encoders
 with open('model_penguin_66130701902.pkl', 'rb') as file:
     model, species_encoder, island_encoder, sex_encoder = pickle.load(file)
