@@ -9,7 +9,7 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import GridSearchCV
 # Load the model and encoders
 with open('model_penguin_66130701902.pkl', 'rb') as file:
-    model, species_encoder, island_encoder, sex_encoder = pickle.load(file)
+    model, species_encoder, island_encoder, sex_encoder, column_transformer = pickle.load(file)
 
 # Streamlit app
 st.title("Penguin Species Prediction")
@@ -38,20 +38,19 @@ x_new = pd.DataFrame({
     'sex': [sex]
 })
 
-# Check if encoders are fitted
+# Check if ColumnTransformer is fitted before transforming
 try:
-    # Transform categorical columns using the encoders
-    x_new['island'] = island_encoder.transform(x_new['island'])
-    x_new['sex'] = sex_encoder.transform(x_new['sex'])
+    # Transform new data with the fitted ColumnTransformer
+    x_new_transformed = column_transformer.transform(x_new)
 except AttributeError:
-    st.error("One or more encoders are not properly fitted. Please ensure the model and encoders were trained properly.")
+    st.error("The ColumnTransformer has not been properly fitted. Please ensure the model was trained correctly.")
     st.stop()
 
 # Prediction button
 if st.button("Predict Species"):
     try:
         # Make prediction
-        y_pred_new = model.predict(x_new)
+        y_pred_new = model.predict(x_new_transformed)
         predicted_species = species_encoder.inverse_transform(y_pred_new)
         
         # Display the result
