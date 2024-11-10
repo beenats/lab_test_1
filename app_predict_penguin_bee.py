@@ -1,31 +1,30 @@
 import streamlit as st
 import pickle
 import pandas as pd
+from sklearn.model_selection import train_test_split
+from sklearn.pipeline import Pipeline
+from sklearn.preprocessing import StandardScaler, OneHotEncoder
+from sklearn.compose import ColumnTransformer
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.model_selection import GridSearchCV
 
-# Load the model and transformers from the pickle file
+# Load the model
 with open('model_penguin_66130701902.pkl', 'rb') as file:
     obj = pickle.load(file)
-    model = obj[0]  # Assuming the first object is the model
-    column_transformer = obj[1]  # Assuming the second object is the column transformer
+    model = obj[0]
 
-# Streamlit app interface
+# Streamlit app
 st.title("Penguin Species Prediction")
 
-# Introduction
-st.write("""
-This app predicts the species of a penguin based on its physical characteristics.
-Please enter the details below and click "Predict".
-""")
-
-# User input for penguin features
+# Input features
 island = st.selectbox("Island", ['Torgersen', 'Biscoe', 'Dream'])
-culmen_length_mm = st.number_input("Culmen Length (mm)", min_value=0.0, step=0.1)
-culmen_depth_mm = st.number_input("Culmen Depth (mm)", min_value=0.0, step=0.1)
-flipper_length_mm = st.number_input("Flipper Length (mm)", min_value=0.0, step=0.1)
-body_mass_g = st.number_input("Body Mass (g)", min_value=0.0, step=1.0)
+culmen_length_mm = st.number_input("Culmen Length (mm)", value=37.0)
+culmen_depth_mm = st.number_input("Culmen Depth (mm)", value=19.3)
+flipper_length_mm = st.number_input("Flipper Length (mm)", value=192.3)
+body_mass_g = st.number_input("Body Mass (g)", value=3750)
 sex = st.selectbox("Sex", ['MALE', 'FEMALE'])
 
-# Prepare the input data as a DataFrame (Ensure it's 2D, with one row and multiple columns)
+# Create input DataFrame
 x_new = pd.DataFrame({
     'island': [island],
     'culmen_length_mm': [culmen_length_mm],
@@ -35,28 +34,9 @@ x_new = pd.DataFrame({
     'sex': [sex]
 })
 
-# Check the shape of the input data to make sure it's 2D
-st.write(f"Input data shape: {x_new.shape}")
+# Make prediction
+if st.button("Predict"):
+    y_pred_new = model.predict(x_new)
+    result = y_pred_new[0]  # Get the predicted species
 
-# Transform the input data using the fitted column transformer
-try:
-    # Transform the data using the column transformer fitted during training
-    x_new_transformed = column_transformer.transform(x_new)
-    
-    # Check the transformed data
-    st.write(f"Transformed input data shape: {x_new_transformed.shape}")
-except Exception as e:
-    st.error(f"Error during transformation: {str(e)}")
-    st.stop()
-
-# Prediction button
-if st.button("Predict Species"):
-    try:
-        # Make prediction using the model
-        y_pred_new = model.predict(x_new_transformed)
-        
-        # Assuming the species is encoded, you might need to decode it
-        predicted_species = y_pred_new[0]  # In case it's a single prediction
-        st.success(f"The predicted species is: {predicted_species}")
-    except Exception as e:
-        st.error(f"An error occurred during prediction: {str(e)}")
+    st.success(f"Predicted Specie: {result}")
