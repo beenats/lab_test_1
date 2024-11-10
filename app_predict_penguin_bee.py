@@ -1,10 +1,12 @@
+import streamlit as st
 import pickle
 import pandas as pd
-import streamlit as st
 
-# Load the model and encoders
+# Load the model and the necessary transformers (pickled)
 with open('model_penguin_66130701902.pkl', 'rb') as file:
-    model, species_encoder, island_encoder, sex_encoder = pickle.load(file)
+    obj = pickle.load(file)
+    model = obj[0]  # Assuming model is the first element in the pickled object
+    column_transformer = obj[1]  # Assuming the transformer is the second element
 
 # Streamlit app
 st.title("Penguin Species Prediction")
@@ -33,23 +35,24 @@ x_new = pd.DataFrame({
     'sex': [sex]
 })
 
-# Check if encoders are fitted
+# Transform the new input data using the column transformer
 try:
-    # Transform categorical columns using the encoders
-    x_new['island'] = island_encoder.transform(x_new['island'])
-    x_new['sex'] = sex_encoder.transform(x_new['sex'])
-except AttributeError:
-    st.error("One or more encoders are not properly fitted. Please ensure the model and encoders were trained properly.")
+    x_new_transformed = column_transformer.transform(x_new)
+except Exception as e:
+    st.error(f"Error during transformation: {str(e)}")
     st.stop()
 
 # Prediction button
 if st.button("Predict Species"):
     try:
-        # Make prediction
-        y_pred_new = model.predict(x_new)
-        predicted_species = species_encoder.inverse_transform(y_pred_new)
+        # Make prediction using the model
+        y_pred_new = model.predict(x_new_transformed)
+        
+        # Assuming that the species encoder is also loaded
+        # If you use label encoding, decode the prediction
+        predicted_species = y_pred_new[0]  # In case it is a single class prediction
         
         # Display the result
-        st.success(f"The predicted species is: {predicted_species[0]}")
+        st.success(f"The predicted species is: {predicted_species}")
     except Exception as e:
-        st.error(f"An error occurred: {str(e)}")
+        st.error(f"An error occurred during prediction: {str(e)}")
